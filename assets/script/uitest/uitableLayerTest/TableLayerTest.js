@@ -23,9 +23,17 @@ cc.Class({
         
         this.view.setData(tempData)
         this.view.reloadData()
+        this.view.setClickCallBack((cell, data)=>{
+            log.d("======click select idx=======",cell.getCellIdx())
+        })
+
 
         this.view2.setData(tempData)
         this.view2.reloadData()
+        this.view.setClickCallBack((cell, data)=>{
+            log.d("======click select idx=======",cell.getCellIdx())
+        })
+
     },
 
 });

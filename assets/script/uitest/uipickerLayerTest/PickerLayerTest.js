@@ -18,16 +18,16 @@ cc.Class({
 
     start () {
         var tempData = []
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 2; i++) {
             tempData.push(i)
         }
         
         this.view.setData(tempData)
         this.view.reloadData()
         
-        this.view2.setData(tempData)
-        this.view2.reloadData()
-        this.view2.gotoIndexPage(5)
+        // this.view2.setData(tempData)
+        // this.view2.reloadData()
+        // this.view2.gotoIndexPage(5)
     },
 
     onBtnLeftPage(){

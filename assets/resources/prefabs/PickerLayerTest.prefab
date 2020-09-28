@@ -740,7 +740,7 @@
       "__id__": 4
     },
     "item": null,
-    "isDelay": true,
+    "isDelay": false,
     "delayTime": 0.1,
     "_direction": 1,
     "fillOrder": 0,
