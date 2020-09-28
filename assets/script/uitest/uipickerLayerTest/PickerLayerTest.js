@@ -25,9 +25,9 @@ cc.Class({
         this.view.setData(tempData)
         this.view.reloadData()
         
-        // this.view2.setData(tempData)
-        // this.view2.reloadData()
-        // this.view2.gotoIndexPage(5)
+        this.view2.setData(tempData)
+        this.view2.reloadData()
+        this.view2.gotoIndexPage(5)
     },
 
     onBtnLeftPage(){
