@@ -12,5 +12,5 @@
      
      3、支持自定义cell大小，可以支持聊天系统，具体请参考uitalkLayerTest
      
-     4、支持选中的回调设置setClickCallBack，以及选中的cell效果改变， 具体请参考uitalkLayerTest
+     4、支持选中的回调设置setClickCallBack，以及选中的cell效果改变， 具体请参考TableLayerTest
      
