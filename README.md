@@ -2,7 +2,7 @@
 主要是扩展一些cocos Creator引擎的gui组件
 
 
-一、增加最常用的TablView组件(重复回收利用的列表视图  TableLayerTest、TalkLayerTest
+一、增加最常用的TablView组件(重复回收利用的列表视图  TableLayerTest、TalkLayerTest）
 
         //this.view表示tableview视图对象
         var tempData = []
