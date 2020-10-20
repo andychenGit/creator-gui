@@ -50,12 +50,12 @@ var BaseCell = cc.Class({
     
     // handle cell 的点击事件
     handleCellClick(){
-        log.d("handle Cell Click");
+        // log.d("handle Cell Click");
     },
 
     //更新cell数据, cellData数据信息
     updateData( idx, cellData ){
-        log.d("################# please over write this function updateData()", idx, cellData)
+        // log.d("################# please over write this function updateData()", idx, cellData)
     },
 
     //获取cell的size, cell重写这个将可以自定义每个cell的大小

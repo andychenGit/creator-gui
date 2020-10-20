@@ -144,7 +144,18 @@ util.moneyFormat = function(money, show_length) {
     }
 }
 
-
+// 2个坐标的角度
+util.getAngle = function(start, end){
+    //计算出朝向
+    var dx = end.x - start.x;
+    var dy = end.y - start.y;
+    var dir = cc.v2(dx,dy);
+    //根据朝向计算出夹角弧度
+    var angle = dir.signAngle(cc.v2(1,0));
+    //将弧度转换为欧拉角
+    var degree = angle / Math.PI * 180;
+    return -degree
+},
 
 
 window.util = util

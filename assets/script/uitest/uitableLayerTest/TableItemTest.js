@@ -7,6 +7,9 @@ cc.Class({
         indexLab : cc.Label,
     },
 
+    onLoad(){
+    },
+
     //更新cell动画显示,子类可以重新这个动画效果
     updateAnim( idx, data ){
         this.node.opacity = 0
@@ -19,7 +22,7 @@ cc.Class({
 
     //更新cell数据
     updateData( idx, data ){
-        this.indexLab.string = idx
+        this.indexLab.string = data.idx
     },
 
 });

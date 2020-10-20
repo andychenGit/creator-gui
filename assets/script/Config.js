@@ -1,7 +1,7 @@
 
 let Config = {}
 
-Config.CC_SHOW_FPS = false  // 是否显示FPS
+Config.CC_SHOW_FPS = true  // 是否显示FPS
 
 let ENV = {
     INNER_TEST  : 1,    // 内侧环境

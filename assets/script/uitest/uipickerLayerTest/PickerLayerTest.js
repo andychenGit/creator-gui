@@ -18,7 +18,7 @@ cc.Class({
 
     start () {
         var tempData = []
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 12; i++) {
             tempData.push(i)
         }
         
