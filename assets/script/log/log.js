@@ -4,38 +4,46 @@
  */
 function trace () 
 {
-    console.trace.apply(null,arguments)
+    if (Config.CC_SHOW_LOG){
+        console.trace.apply(null,arguments)
+    }
 }
 
 function info()
 {
-    console.log.apply(null,arguments)
+    if (Config.CC_SHOW_LOG){
+        console.info.apply(null,arguments)
+    }
 }
 
 function debug()
 {
-    console.log.apply(null,arguments)  
+    if (Config.CC_SHOW_LOG){
+        console.log.apply(null,arguments)  
+    }
 }
 
 function warn()
 {
-    console.log("################### warn begin ###################")
-    console.log.apply(null,arguments)
-    console.log("################### warn end ###################")
+    if (Config.CC_SHOW_LOG){
+        console.warn("################### warn begin ###################")
+        console.warn.apply(null,arguments)
+        console.warn("################### warn end ###################")
+    }
 }
 
 function error()
 {
-    console.log("################### error begin ###################")
-    console.log(arguments)
-    console.log("################### error end ###################")
+    console.error("################### error begin ###################")
+    console.error(arguments)
+    console.error("################### error end ###################")
 }
 
 function tryError( err )
 {
-    console.log("################### tryError begin ###################")
-    console.log(err, err.stack)
-    console.log("################### tryError end ###################")
+    console.error("################### tryError begin ###################")
+    console.error(err, err.stack)
+    console.error("################### tryError end ###################")
 }
 
 var log = {

@@ -1,4 +1,6 @@
 
+//视图基类
+//用于全屏界面层
 var BaseNode = require("BaseNode")
 var BaseView = cc.Class({
     extends: BaseNode,   

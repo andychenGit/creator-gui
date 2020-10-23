@@ -1,28 +1,44 @@
-const NodeEvent = cc.Node.EventType;
-
-const NUMBER_OF_GATHERED_TOUCHES_FOR_MOVE_SPEED = 5;
-const OUT_OF_BOUNDARY_BREAKING_FACTOR = 0.05;
-const EPSILON = 1e-4;
-const MOVEMENT_FACTOR = 0.7;
-
-let _tempPoint = cc.v2();
-let _tempPrevPoint = cc.v2();
-
-let quintEaseOut = function(time) {
-    time -= 1;
-    return (time * time * time * time * time + 1);
-};
-
-let getTimeInMilliseconds = function() {
-    let currentTime = new Date();
-    return currentTime.getMilliseconds();
-};
 
 //重写scrollView函数
+//在制作下拉自动更新的时候发现少量的item时ScrollView不能滑动，所有做了部分修改
 let ScrollView = cc.Class({
     extends: cc.ScrollView,
 
+    _onTouchMoved (event, captureListeners) {
+        log.d("===_onTouchMoved=====")
+        if (!this.enabledInHierarchy) return;
+        if (this._hasNestedViewGroup(event, captureListeners)) return;
+
+        let touch = event.touch;
+        if (this.content) {
+            this._handleMoveLogic(touch);
+        }
+        // Do not prevent touch events in inner nodes
+        if (!this.cancelInnerEvents) {
+            return;
+        }
+
+        log.d("===_onTouchMoved1=====")
+        let deltaMove = touch.getLocation().sub(touch.getStartLocation());
+        //FIXME: touch move delta should be calculated by DPI.
+        if (deltaMove.mag() > 7) {
+            if (!this._touchMoved && event.target !== this.node) {
+                // Simulate touch cancel for target node
+                let cancelEvent = new cc.Event.EventTouch(event.getTouches(), event.bubbles);
+                cancelEvent.type = cc.Node.EventType.TOUCH_CANCEL;
+                cancelEvent.touch = event.touch;
+                cancelEvent.simulate = true;
+                event.target.dispatchEvent(cancelEvent);
+                this._touchMoved = true;
+            }
+        }
+        this._stopPropagationIfTargetIsMe(event);
+        log.d("===_onTouchMoved3=====")
+    },
+
     _onTouchEnded (event, captureListeners) {
+        log.d("=========_onTouchEnded========")
+
         if (!this.enabledInHierarchy) return;
         if (this._hasNestedViewGroup(event, captureListeners)) return;
 
@@ -57,10 +73,13 @@ let ScrollView = cc.Class({
     },
 
     _onTouchCancelled (event, captureListeners) {
+        log.d("==_onTouchCancelled==")
+
         if (!this.enabledInHierarchy) return;
         if (this._hasNestedViewGroup(event, captureListeners)) return;
 
         // Filte touch cancel event send from self
+        
         if (!event.simulate) {
             let touch = event.touch;
             if(this.content){
@@ -84,7 +103,7 @@ let ScrollView = cc.Class({
             }
         }
         this._stopPropagationIfTargetIsMe(event);
-
+        log.d("=========_onTouchCancelled========")
     },
 
      _scrollChildren (deltaMove) {

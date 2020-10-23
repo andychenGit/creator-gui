@@ -28,8 +28,8 @@ var RefreshState = cc.Enum({
 
 //刷新类型
 var RefreshType = cc.Enum({
-    DROP_DOWN : 0,  //下拉顶部刷新
-    DROP_UP : 1,  //上拉底部刷新
+    DROP_LEFT_DOWN : 0,  //下拉顶部刷新
+    DROP_RIGHT_UP : 1,  //上拉底部刷新
 })
 
 
@@ -43,19 +43,19 @@ var TableView = cc.Class({
         vertical: {
             default: true,
             animatable: false,
-            visible: false,
+            visible: false,   //隐藏编辑器的属性
             override: true,
         },
         horizontal: {
             default: true,
             animatable: false,
-            visible: false,
+            visible: false,//隐藏编辑器的属性
             override: true,
         },
         cancelInnerEvents: {
             default: true,
             animatable: false,
-            visible: false,
+            visible: false,//隐藏编辑器的属性
             override: true,
         },
         verticalScrollBar: {
@@ -64,7 +64,7 @@ var TableView = cc.Class({
             notify () {},
             animatable: false,
             visible(){
-                return false//this._direction == DirectType.VERTICAL
+                return false//隐藏编辑器的属性
             },
             override: true,
         },
@@ -74,7 +74,7 @@ var TableView = cc.Class({
             notify () {},
             animatable: false,
             visible(){
-                return false//this._direction == DirectType.HORIZONTAL
+                return false//隐藏编辑器的属性
             },
             override: true,
         },
@@ -182,6 +182,15 @@ var TableView = cc.Class({
         if (cellsCount > 0) {
             var currentPos = 0
             var cellSize = cc.size(0,0)
+
+            if (this.refreshBar && this._refreshState == RefreshState.LOADING) {
+                if (this.getDirection() == this.DirectType.VERTICAL && this.fillOrder == this.VerticalFillOrder.TOP_DOWN){ //纵向
+                    currentPos = this.refreshBar.node.height
+                }else if(this.getDirection() == this.DirectType.HORIZONTAL){
+                    currentPos = this.refreshBar.node.width
+                }
+            }
+
             for (let i = 0; i < cellsCount; i++) {
                 this._vCellsPositions[i] = currentPos
                 cellSize = this.cellSizeForTable(i)
@@ -196,6 +205,11 @@ var TableView = cc.Class({
                         currentPos += this.spacing
                     }
                 }   
+            }
+            if (this.refreshBar && this._refreshState == RefreshState.LOADING) {
+                if (this.getDirection() == this.DirectType.VERTICAL && this.fillOrder != this.VerticalFillOrder.TOP_DOWN){ //纵向
+                    currentPos += this.refreshBar.node.height
+                }
             }
             this._vCellsPositions[cellsCount] = currentPos
         }
@@ -344,24 +358,28 @@ var TableView = cc.Class({
         return offset
     },
     
-    handleUpdateActive( cell, isActive ){  //用于更新界面的选中状态显示
+    //用于更新界面的选中状态显示
+    handleUpdateActive( cell, isActive ){  
         let cellObj = cell.getComponent(Agui.BaseCell)
         cellObj.handleUpdateActive(isActive)
     },
 
-    handleCellUpdateAnim(cell, isDelay, idx, data){//更新cell动画显示
+    //更新cell动画显示
+    handleCellUpdateAnim(cell, isDelay, idx, data){
         if (isDelay) {
             let cellObj = cell.getComponent(Agui.BaseCell)
             cellObj.handleUpdateAnim(idx, data)
         }
     },
 
-    handleCellUpdateData(cell, idx, data){//更新cell数据, cellData数据信息
+    //更新cell数据, cellData数据信息
+    handleCellUpdateData(cell, idx, data){
         let cellObj = cell.getComponent(Agui.BaseCell)
         cellObj.handleUpdateData(this, idx, data)
     },
     
-    updateCellAtIndex(idx, isDelay){  //通过index更新cell信息
+    //通过index更新cell信息
+    updateCellAtIndex(idx, isDelay){  
         let v = this._datas[idx]
         let cell = this._showNodes[idx]
 
@@ -387,7 +405,8 @@ var TableView = cc.Class({
         }
     },
 
-    scrollViewDidScroll(isDelay){ //滑动事件的逻辑处理，计算startIdx-endIdx值，并且更新
+    //滑动事件的逻辑处理，计算startIdx-endIdx值，并且更新
+    scrollViewDidScroll(isDelay){ 
         var cellsCount = this.getCellCount()
         if (cellsCount == 0)
             return
@@ -505,10 +524,6 @@ var TableView = cc.Class({
         }else{
             size = this._templateCell.getContentSize()
         }
-
-        if (this.refreshBar && this._refreshState == RefreshState.LOADING && idx == 0) {
-            size = cc.size(size.width, size.height + this.refreshBar.node.height)
-        }
         return size
     },
 
@@ -540,27 +555,53 @@ var TableView = cc.Class({
                     offsetPos = cc.v2(0, 0)
                 } 
             }
+
             if (this.refreshBar && this._refreshState == RefreshState.LOADING) {
                 this.content.position = preOffset
+                this.refreshBar.updateState(this, this._refreshState)
+            }else if(this.refreshBar && this._refreshState == RefreshState.UPDATED) {
+                this.refreshBar.updateState(this, this._refreshState)
+                this.scheduleOnce(()=>{
+                    this._refreshState = RefreshState.NORMAL
+                    this.refreshBar.updateState(this, this._refreshState)
+                }, 3) 
+                this.content.position = cc.v2(offsetPos.x, offsetPos.y - this.refreshBar.node.height)
+                this._startAutoScroll(cc.v2(0,this.refreshBar.node.height), 1.5, true)
             }else{
                 this.setContainerOffset(offsetPos)
             }
         }else{
             if (viewSize.width - currSize.width >= 0 || preOffset.x >= 0) {
-                this.setContainerOffset(cc.v2(0, 0))
+                offsetPos = cc.v2(0, 0)
             }else{
                 var w = currSize.width + preOffset.x
                 var space = viewSize.width - w
                 if (space > 0){
-                    this.setContainerOffset(cc.v2(preOffset.x + space, 0))
+                    offsetPos = cc.v2(preOffset.x + space, 0)
                 }else{
-                    this.setContainerOffset(cc.v2(preOffset.x, 0))	
-                }	
-            }
+                    offsetPos = cc.v2(preOffset.x, 0)
+                }
+            }	
+
+            if (this.refreshBar && this._refreshState == RefreshState.LOADING) {
+                this.content.position = cc.v2(preOffset.x - this.refreshBar.node.width, preOffset.y)
+                this.refreshBar.updateState(this, this._refreshState)
+                this._startAutoScroll(cc.v2(-this.content.position.x,0), 1.0, true)
+            }else if(this.refreshBar && this._refreshState == RefreshState.UPDATED) {
+                this.refreshBar.updateState(this, this._refreshState)
+                this.scheduleOnce(()=>{
+                    this._refreshState = RefreshState.NORMAL
+                    this.refreshBar.updateState(this, this._refreshState)
+                }, 3) 
+                this.content.position = cc.v2(offsetPos.x + this.refreshBar.node.width, offsetPos.y)
+                this._startAutoScroll(cc.v2(-this.refreshBar.node.width,0), 1.5, true)
+            }else{
+                this.setContainerOffset(offsetPos)
+            } 
         }
     },
 
-
+    //重写触摸开始事件
     _onTouchBegan(event, captureListeners) {
         this._isFristCheck = false;
         this._cancelTouch = false;
@@ -570,6 +611,7 @@ var TableView = cc.Class({
         }
     },
 
+    //重写触摸移动事件
     _onTouchMoved(event, captureListeners){
         let touch = event.touch;
         let deltaMove = touch.getLocation().sub(touch.getStartLocation());
@@ -620,8 +662,13 @@ var TableView = cc.Class({
 
     _onTouchCancelled (event, captureListeners) {
         if (!this._cancelTouch) {
-            this._dispatchEvent('touch-cancelled');
-            this._super(event, captureListeners)
+            if (this.getDirection() == DirectType.VERTICAL) {
+                this._dispatchEvent('touch-cancelled');
+                this._super(event, captureListeners)
+            }else{
+                this._super(event, captureListeners)
+                this._dispatchEvent('touch-cancelled');
+            }
         }else{
             this._breakTouchCallback(event.type, event)
         }     
@@ -638,34 +685,57 @@ var TableView = cc.Class({
                     && this._refreshState != RefreshState.DROP_REFRESH
                     && this._refreshState < RefreshState.LOADING) {
                     this._refreshState = RefreshState.DROP_REFRESH
-                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_DOWN)
+                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_LEFT_DOWN)
                 }
                 else if (offset.y < viewSize.height - size.height - this.refreshBar.node.height 
                     && this._refreshState != RefreshState.RELEASE_UPDATE
                     && this._refreshState < RefreshState.LOADING) {
                     this._refreshState = RefreshState.RELEASE_UPDATE
-                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_DOWN)
+                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_LEFT_DOWN)
                 }
-            } 
+            }else if(this.getDirection() == DirectType.HORIZONTAL){
+                if (offset.x > 0 
+                    && offset.x < this.refreshBar.node.width 
+                    && this._refreshState != RefreshState.DROP_REFRESH
+                    && this._refreshState < RefreshState.LOADING) {
+                    this._refreshState = RefreshState.DROP_REFRESH
+                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_LEFT_DOWN)
+                }
+                else if (offset.x > this.refreshBar.node.width 
+                    && this._refreshState != RefreshState.RELEASE_UPDATE
+                    && this._refreshState < RefreshState.LOADING) {
+                    this._refreshState = RefreshState.RELEASE_UPDATE
+                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_LEFT_DOWN)
+                }
+            }
         }
     },
 
     onScrollTouchUp(event){
-        let offset = this.getContainerOffset() 
         let size = this.getContainerSize() 
+        let offset = this.getContainerOffset() 
         let viewSize = this.node.getContentSize()
         if (this.refreshBar) {
             if (this.getDirection() == DirectType.VERTICAL) {//只处理VERTICAL
                 if (offset.y < viewSize.height - size.height - this.refreshBar.node.height 
                     && this._refreshState == RefreshState.RELEASE_UPDATE) {
                     this._refreshState = RefreshState.LOADING
-                    this.refreshBar.updateState(this, this._refreshState, RefreshType.DROP_DOWN)
                     this.reloadData(true)
                     if (this.m_updateCallBack != null && this.m_updateCallBack != undefined) {
-                        this.m_updateCallBack.call(this, RefreshType.DROP_DOWN)
+                        this.m_updateCallBack.call(this, RefreshType.DROP_LEFT_DOWN)
                     }  
                 }
-            } 
+            }else if(this.getDirection() == DirectType.HORIZONTAL){
+                log.d("=======TableView:_onTouchCancelled=====touch-cancelled==",offset.x, this.refreshBar.node.width, this._refreshState)
+                if (offset.x > this.refreshBar.node.width 
+                    && this._refreshState == RefreshState.RELEASE_UPDATE) {
+                    this._refreshState = RefreshState.LOADING
+                    this.reloadData(true)
+                    if (this.m_updateCallBack != null && this.m_updateCallBack != undefined) {
+                        this.m_updateCallBack.call(this, RefreshType.DROP_LEFT_DOWN)
+                    }  
+                }
+            }
         }
     },
 
@@ -792,13 +862,8 @@ var TableView = cc.Class({
 
     //设置更新完成
     setUpdateFinish(){
-        if (this.refreshBar) {
+        if (this.refreshBar && this._refreshState == RefreshState.LOADING) {
             this._refreshState = RefreshState.UPDATED
-            this.refreshBar.updateState(this, this._refreshState)
-            this.scheduleOnce(()=>{
-                this._refreshState = RefreshState.NORMAL
-                this.refreshBar.updateState(this, this._refreshState)
-            }, 2) 
         }
     },
 
@@ -896,4 +961,5 @@ TableView.prototype.VerticalFillOrder = VerticalFillOrder
 
 TableView.RefreshState = RefreshState
 TableView.RefreshType = RefreshType
+TableView.DirectType = DirectType
 module.exports = TableView

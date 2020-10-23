@@ -12,6 +12,8 @@ let PlatformQQ = require("PlatformQQ")
 				s_instance = new PlatformWx()
 			}else if( cc.sys.platform == cc.sys.QQ_PLAY ){
 				s_instance = new PlatformQQ()
+			}else if( cc.sys.platform == cc.sys.ANDROID){
+				
 			}else{
 				s_instance = new PlatformBase()
 			}

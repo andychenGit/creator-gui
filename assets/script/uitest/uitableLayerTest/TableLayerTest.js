@@ -17,7 +17,7 @@ cc.Class({
 
     start () {
         var tempData = []
-        for (let i = 0; i < 13; i++) {
+        for (let i = 0; i < 12; i++) {
             tempData.push({idx : i})
         }
         
@@ -26,6 +26,20 @@ cc.Class({
         this.view.setClickCallBack((cell, data)=>{
             log.d("======click select idx=======",cell.getCellIdx())
         })
+        this.view.setUpdateCallBack((type)=>{
+            //TODO请求网络更新数据
+            //这里使用了模拟更新数据
+            this.scheduleOnce(()=>{
+                var tempData = []
+                for (let i = 0; i < 15; i++) {
+                    tempData.push({idx : i})
+                }
+                this.view.setUpdateFinish()
+                this.view.setData(tempData)
+                this.view.reloadData(true)
+            }, 2)
+        })
+
 
         var tempData = []
         for (let i = 0; i < 3; i++) {
@@ -51,6 +65,8 @@ cc.Class({
             }
         })
         this.view2.setUpdateCallBack((type)=>{
+            //TODO请求网络更新数据
+            //这里使用了模拟更新数据
             this.scheduleOnce(()=>{
                 var tempData = []
                 for (let i = 0; i < 5; i++) {
