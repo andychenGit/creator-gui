@@ -34,11 +34,15 @@ var BaseView = cc.Class({
 
     //显示
     show(zorder, parent, needAnim, alpha, needBgColor){
-        game.UIMgr.getInstance().open(this, zorder, parent, needAnim, alpha, needBgColor);
+        alpha = alpha == undefined ? 250 : alpha
+        needAnim = needAnim == undefined ? false : needAnim
+        needBgColor = needBgColor == undefined ? false : needBgColor
+        game.UIMgr.getInstance().open(this, zorder, parent, needAnim, alpha, needBgColor)
     },
 
     //关闭
     close(needAnim){
+        needAnim = needAnim == undefined ? false : needAnim
         game.UIMgr.getInstance().close(this, needAnim)
     },
 

@@ -36,3 +36,4 @@ var BasePop = cc.Class({
 
 module.exports = BasePop;
 
+``
